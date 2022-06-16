@@ -46,12 +46,37 @@ def get_bad_eigvals(A, e):
     return tuple(values)
 
 
+def get_bad_eigvals_v2(A, e):
+    values = set()
+    i = 0
+    while i < A.shape[0] - 1:
+        j = 1
+        if A[i + 1][i] < e:
+            values.add(A[i][i])
+            i += 1
+        else:
+            index = i
+            while index < A.shape[0] - 1 and A[index + 1][index] >= e:
+                j += 1
+                index += 1
+
+            roots = find_eigvals(A[i:i+j, i:i+j])
+            for root in roots:
+                values.add(root)
+            i += 2
+    else:
+        if i == A.shape[0] - 1:
+            values.add(A[i][i])
+
+    return tuple(values)
+
+
 def main():
 
-    A = np.array([[3, -1, 10, 3],
-                  [-1, -10, -1, 0],
-                  [1, 0, 2.3, 1],
-                  [-49, 2, -1, -5]])
+    # A = np.array([[3, -1, 10, 3],
+    #               [-1, -10, -1, 0],
+    #               [1, 0, 2.3, 1],
+    #               [-49, 2, -1, -5]])
 
     # A = np.array([[1, 3, 4, 5, 3],
     #               [2, 1, 9, 3, 4],
@@ -71,22 +96,22 @@ def main():
     #               [0, 4, -1],
     #               [0, -1, 4]])
 
-    # A = np.array([[1, -1, 0],
-    #               [-1, 0, 1],
-    #               [0, 1, 1]])
+    A = np.array([[1, -1, 0],
+                  [-1, 0, 1],
+                  [0, 1, 1]])
 
     A1 = np.copy(A)
 
-    for i in range(3000):
+    for i in range(200):
         q, r = qr_decomposition(A1)
         A1 = r @ q
 
-    print('Answer matrix =\n', np.copy(A1), '\n')
+    print('Answer matrix =\n', A1, '\n')
 
     if np.allclose(A1, np.triu(A1)):
         print('Eigvals:\n', *np.diag(A1))
     else:
-        print('Eigvals:\n', get_bad_eigvals(A1, 1e-6))
+        print('Eigvals:\n', *get_bad_eigvals_v2(A1, 1e-6), sep='\n')
 
     print('\nValues using numpy: ', *np.linalg.eigvals(A), sep='\n')
 
